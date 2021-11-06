@@ -17,7 +17,7 @@ source("StampCalculator.R")
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("Stampy: a calculator to figure out what stamps to add to your postcards and such"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
