@@ -73,9 +73,9 @@ server <- function(input, output) {
       output$result1 <- renderText(orderedstamps)
       # browser()
       combos <- makeStampCombos(vals = orderedstamps,totalfare = as.numeric(input$totalfare))
-      output$Exact <- renderPrint(combos$Exact)
-      output$Fewest <- renderPrint(combos$Fewest)
-      output$Score <- renderPrint(combos$Score)
+      output$Exact <- renderPrint(paste(combos$exact$stampN," x ",combos$exact$stampVal,"cent stamps,",combos$exact$remaining,"cents over" ))
+      output$Fewest <- renderPrint(paste(combos$fewest[1,2:3]$stampN," x ",combos$fewest[1,2:3]$stampVal,"cent stamps,",combos$fewest[2,2:3]$stampN," x ",combos$fewest[2,2:3]$stampVal,"cent stamps,",-combos$fewest[2,2:4]$remaining,"cents over"))
+      output$Score <- renderPrint(paste(combos$minscore[1,2:3]$stampN," x ",combos$minscore[1,2:3]$stampVal,"cent stamps,",combos$minscore[2,2:3]$stampN," x ",combos$minscore[2,2:3]$stampVal,"cent stamps,",-combos$minscore[2,3:4]$remaining,"cents over"))
     }) 
 }
 
