@@ -69,7 +69,7 @@ vals <- c(58,37,32,20,13,3)
 ## Matt approach
 #Loop for starting value
 makeStampCombos <- function(vals, totalfare){
-OUT<-lapply(1:length(vals),function(i){
+OUT.0<-lapply(1:length(vals),function(i){
   print(paste("loop through",i,"cur stamp is ",vals[i]))
   remaining <- totalfare%%vals[i]
   stampN <- totalfare%/%vals[i]
@@ -156,10 +156,11 @@ OUT<-lapply(1:length(vals),function(i){
   #bind all previous
 }#function end
 )
+names(OUT.0)<-vals
 
 #end lapply
 require(dplyr)
-OUT <- OUT %>% bind_rows()
+OUT <- OUT.0 %>% bind_rows()
 
 #bigstampN= stampN[stampN$startVal==stampN$stampVal]$stampVal
 bigstampN <- OUT %>% group_by(startVal) %>% filter(row_number()==1) %>% mutate(comboname = paste0(stampN,"x",startVal)) %>% select(c(startVal,comboname))
@@ -177,12 +178,12 @@ exact = subset(OUT, OUT$startVal==summaryStamps[(summaryStamps$overPymt == 0),]$
 exact = subset(exact, exact$stampN!=0)
 
 exactcombo <- paste(exact$stampN," x ",exact$stampVal,"cent stamps,",exact$remaining,"cents over" )
-exact[,2:3]
+
 
 minimize_num <- subset(OUT,OUT$startVal==summaryStamps[which.min(summaryStamps$stampN),][1,]$startVal)
 minimize_num = minimize_num[minimize_num$stampN!=0,]
 mininum_combo <- paste(minimize_num[1,2:3]$stampN," x ",minimize_num[1,2:3]$stampVal,"cent stamps,",minimize_num[2,2:3]$stampN," x ",minimize_num[2,2:3]$stampVal,"cent stamps,",-minimize_num[2,2:4]$remaining,"cents over")
-minimize_num[,2:3]
+
 
 minimize_score <- subset(OUT, OUT$startVal==summaryStamps[summaryStamps$score==min(summaryStamps$score),][2,]$startVal)
 minimize_score <- minimize_score[minimize_score$stampN!=0,]
@@ -191,9 +192,8 @@ miniscore_combo <- paste(minimize_score[1,2:3]$stampN," x ",minimize_score[1,2:3
 
 
 #list(Exact = exactcombo, Fewest = mininum_combo, Score = miniscore_combo, summaryStamps)
-list(OUT)
+list(data=OUT.0,exact=exact,fewest=minimize_num,minscore=minimize_score)
 #browser()
 }
 
-output <- makeStampCombos(vals,totalfare)
-output
+
