@@ -149,5 +149,4 @@ list(Exact = exactcombo, Fewest = mininum_combo, Score = miniscore_combo, summar
 #browser()
 }
 
-output <- makeStampCombos(vals,totalfare)
-output
+
