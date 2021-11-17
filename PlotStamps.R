@@ -3,8 +3,8 @@
 require(grid);require(colorspace);require(gridExtra)
 
 #plot a single stamp
-PlotStamp<-function(stampVal=30,stampWidth=.8,stampHeight=.8,outerColor="#3A0CA3",innerColorAlpha=0.2,fontSize=35,plot=F){
-nScallops=15
+PlotStamp<-function(stampVal=30,stampWidth=.8,stampHeight=.8,outerColor="#3A0CA3",innerColorAlpha=0.2,borderWidth=0.2,fontSize=30,plot=F,nScallops=20){
+nScallops=nScallops
 nudgeEdge=0
 #Make lighter innercolor based on alpha value that is a lighter, but opaque version
 #of the outercolor (by mixing with white)
@@ -29,8 +29,8 @@ grid::grid.newpage()
                         vp=grid::viewport(x = 0.5, y = 0.5, width=1,
                         height=1,clip="on")),
     grid::rectGrob(name = "innerRec",
-                        x = 0.5, y = 0.5, width=stampWidth*.8,
-                        height=stampWidth*.8,
+                        x = 0.5, y = 0.5, width=stampWidth*(1-borderWidth),
+                        height=stampWidth*(1-borderWidth),
                         gp = grid::gpar(col = "gray30",fill=innerColor)),
   grid::circleGrob(name = "scallops",
     x = scallopCoords$x,
@@ -51,7 +51,7 @@ return(stamp_grob)
 
 }
 
-PlotStamp(plot=T)
+# PlotStamp(plot=T)
 
 #add more palettes (coolors.co is a great source)
 palettes<-list(
@@ -62,39 +62,46 @@ StyleStamps<-function(denominations,pal=palettes[[1]]){
   #set scalar for sizing denominations
   #ratio of smallest to largest size
   smallest=0.5
-  sVals<-sort(unique(denominations),decreasing=T)
+  sVals<-sort(as.numeric(unique(denominations)),decreasing=T)
   #repeat the palette if necessary to match the length of the 
   #number of unique stamp values
   pal_final<-rep_len(pal,length.out = length(sVals))
+  # browser()
   sizeDiffs=smallest/(length(sVals)-1)
   size_factors<-c(1,rep(NA,length(sVals)-1))
-  for(ii in 2:length(sVals)){size_factors[ii]<-size_factors[[ii-1]]-sizeDiffs}
+  # browser()
+  #make size gradations between 1 and smallest if more than 1 denomination
+  if(length(denominations)>1){
+    for(ii in 2:length(sVals)){size_factors[ii]<-size_factors[[ii-1]]-sizeDiffs}
+  }
   return(data.frame(stampVal=sVals,colors=pal_final,size_factors=size_factors))
   }
 
 
 
 #Iterate across all stamp_data
-PlotMultStamps<-function(denominations){
+PlotMultStamps<-function(denominations,borderWidth,nScallops,...){
   maxCol=5 #maximum number of stamps per row
   
   #get color and size info for stamp denominations
-  stamp_styles<-StyleStamps(denominations)
+  stamp_styles<-StyleStamps(denominations,...)
   
   stamp_batch<-lapply(1:length(denominations),function(i){
       #Set largest stampWidth
-      defaultWidth=0.8
+      defaultWidth=0.99
       #get relative width, scaled by stamp value
       styleRow<-which(stamp_styles$stampVal==denominations[i])
       rel_width<-defaultWidth*stamp_styles$size_factors[styleRow]
       #Actually plot a stamp
-      PlotStamp(denominations[i],stampWidth =rel_width,stampHeight=rel_width,
-                outerColor=stamp_styles$colors[styleRow])
+      PlotStamp(denominations[i],stampWidth =defaultWidth,stampHeight=defaultWidth,
+                outerColor=stamp_styles$colors[styleRow],plot=F,nScallops=nScallops,
+                borderWidth=borderWidth)
   })
   # batch1<-do.call(grid::gList,stamp_batch[[1]])  
   # cowplot::plot_grid(batch1[[1]],batch1[[2]],ncol=2)
   # gridExtra::grid.arrange(batch1,ncol=2)
   names(stamp_batch)<-denominations
+  list(plots=stamp_batch,styles=stamp_styles)
 }
 
 # stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))

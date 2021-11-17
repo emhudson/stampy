@@ -16,7 +16,10 @@ source("PlotStamps.R")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-
+    #import custom styling
+     tags$head(
+              tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+      ),
     # Application title
     titlePanel("Stampy: a calculator to figure out what stamps to add to your postcards and such"),
 
@@ -69,9 +72,8 @@ server <- function(input, output) {
     output$consoleTxt<-renderPrint(input$stampValues)
 
     
-    observeEvent(input$calculate,{
+  observe({
       #R code
-      # source("Rfile.r")
       orderedstamps<-sort(as.numeric(input$stampValues), decreasing = T)
       output$result1 <- renderText(orderedstamps)
       #browser()
@@ -82,18 +84,68 @@ server <- function(input, output) {
       output$Fewest <- renderPrint(c(paste(combos$fewest[1,2:nrow(combos$fewest)]$stampN," x ",combos$fewest[1,2:nrow(combos$fewest)]$stampVal,"cent stamps,",combos$fewest[2,2:nrow(combos$fewest)]$stampN," x ",combos$fewest[2,2:nrow(combos$fewest)]$stampVal,"cent stamps,"),paste(-combos$fewest$remaining[nrow(combos$fewest)],"cents over")))
       #Print Lowest score
       output$Score <- renderPrint(c(paste(combos$minscore[1:nrow(combos$minscore),]$stampN," x ",combos$minscore[1:nrow(combos$minscore),]$stampVal,"cent stamps,"), paste(-combos$minscore$remaining[nrow(combos$minscore)],"cents over")))
+  
+        # Generate Stamp Images -------------------------------------------------------------
       
+        stamps<-PlotMultStamps(input$stampValues,borderWidth=0.4,nScallops=11)
+        #where we gonna save stamp images temporarily?
+        img_loc<-paste0(getwd(),"/www/temp/")
+        #make that dir if it doesn't exist
+        dir.create(img_loc,showWarnings=F)
+        #delete and rewrite all temp files
+        unlink(list.files(img_loc,pattern=".png"))
+        #now save those stamp plots as images
+         lapply(1:length(stamps$plots),function(i) {
+           png(paste0(img_loc,names(stamps$plots)[i],".png"),width=200,height=200, units="px",res=150)
+           grid.draw(stamps$plots[[i]])
+           dev.off()
+          })  
+          
       # Plot Stamps -------------------------------------------------------------
   output$main<-renderUI({
-    
-    # Generate Stamp Images -------------------------------------------------------------
-    stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))
-stamps<-Stampify(stamp_data,100)
-img_loc<-paste0(tempdir(),"/stampy/")
-# lapply(stamps,function(x) png(x))
-})#end renderUI
+     #base png output size in px
+     base_stamp_sz=50
+     #max number of stamps you want per row
+     stamps_per_row=5
 
-})#End observe event
+     #testing repeating an image object
+     solns<-unique(combos$exact$startVal)
+     tagList(
+         h3(class="combo-heading","Exact solution(s):"),
+         lapply(solns,function(soln_i){
+           #create a solution div for each unique solution
+           curr_soln<-subset(combos$exact,startVal==soln_i)
+           div(class="solution",
+               # browser(),
+               p(class="solution-text",
+                   paste0(c(sapply(1:nrow(curr_soln),function(row_i){
+                     paste0(curr_soln$stampN[row_i]," x ",curr_soln$stampVal[row_i],"c")
+                   }),paste0(tail(curr_soln,1)$remaining," remaining")),
+                   collapse=", "
+                   )
+               ),
+              #in-line styling to set the number of stamps per row; additional styling can be done in custom.css
+              # browser(),
+              div(class="stamp-container",style=paste0("width:",
+                                                       #an awkward solution to keep stamps wrapping as expected
+                                                       (stamps_per_row*base_stamp_sz)-10,
+                                                           "px;"),
+             tagList(
+               lapply(1:nrow(curr_soln),function(i){
+                 curr_stamp<-curr_soln[i,]
+                 curr_stamp_sz<-stamps$styles$size_factors[which(stamps$styles$stampVal==curr_stamp$stampVal)]
+                 #repeat images the desired amount
+                 lapply(1:curr_stamp$stampN,function(ii){
+                   img(class="stamp",src=paste0("temp/",curr_stamp$stampVal,".png"),width=curr_stamp_sz*base_stamp_sz,height=curr_stamp_sz*base_stamp_sz)
+                 })
+             }))
+             )
+           )
+         })
+       )
+    })#end renderUI
+
+}) %>% bindEvent(input$calculate)#End observe 
 }# End server logic
     
 
