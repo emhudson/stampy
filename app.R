@@ -16,7 +16,10 @@ source("PlotStamps.R")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-
+    #import custom styling
+     tags$head(
+              tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+      ),
     # Application title
     titlePanel("Stampy: a calculator to figure out what stamps to add to your postcards and such"),
 
@@ -86,9 +89,11 @@ server <- function(input, output) {
       
         stamps<-PlotMultStamps(input$stampValues,borderWidth=0.4,nScallops=11)
         #where we gonna save stamp images temporarily?
-        img_loc<-paste0(getwd(),"/www/")
+        img_loc<-paste0(getwd(),"/www/temp/")
         #make that dir if it doesn't exist
         dir.create(img_loc,showWarnings=F)
+        #delete and rewrite all temp files
+        unlink(list.files(img_loc,pattern=".png"))
         #now save those stamp plots as images
          lapply(1:length(stamps$plots),function(i) {
            png(paste0(img_loc,names(stamps$plots)[i],".png"),width=200,height=200, units="px",res=150)
@@ -100,6 +105,8 @@ server <- function(input, output) {
   output$main<-renderUI({
      #base png output size in px
      base_stamp_sz=50
+     #max number of stamps you want per row
+     stamps_per_row=5
      
      #testing repeating an image object
      solns<-unique(combos$exact$startVal)
@@ -110,23 +117,26 @@ server <- function(input, output) {
            curr_soln<-subset(combos$exact,startVal==soln_i)
            div(class="solution",
                # browser(),
-             p(class="solution-text",
-                 paste0(c(sapply(1:nrow(curr_soln),function(row_i){
-                   paste0(curr_soln$stampN[row_i]," x ",curr_soln$stampVal[row_i],"c")
-                 }),paste0(tail(curr_soln,1)$remaining," remaining")),
-                 collapse=", "
-                 )
-             ),
-           tagList(
-             lapply(1:nrow(curr_soln),function(i){
-               curr_stamp<-curr_soln[i,]
-               # browser()
-               curr_stamp_sz<-stamps$styles$size_factors[which(stamps$styles$stampVal==curr_stamp$stampVal)]
-               #repeat images the desired amount
-               lapply(1:curr_stamp$stampN,function(ii){
-                 img(src=paste0(curr_stamp$stampVal,".png"),width=curr_stamp_sz*base_stamp_sz)
-               })
-           }))
+               p(class="solution-text",
+                   paste0(c(sapply(1:nrow(curr_soln),function(row_i){
+                     paste0(curr_soln$stampN[row_i]," x ",curr_soln$stampVal[row_i],"c")
+                   }),paste0(tail(curr_soln,1)$remaining," remaining")),
+                   collapse=", "
+                   )
+               ),
+              #in-line styling to set the number of stamps per row; additional styling can be done in custom.css
+             div(class="stamp-container",style=paste0("width:",stamps_per_row*base_stamp_sz,"px;"),
+             tagList(
+               lapply(1:nrow(curr_soln),function(i){
+                 curr_stamp<-curr_soln[i,]
+                 # browser()
+                 curr_stamp_sz<-stamps$styles$size_factors[which(stamps$styles$stampVal==curr_stamp$stampVal)]
+                 #repeat images the desired amount
+                 lapply(1:curr_stamp$stampN,function(ii){
+                   img(class="stamp",src=paste0("temp/",curr_stamp$stampVal,".png"),width=curr_stamp_sz*base_stamp_sz,height=curr_stamp_sz*base_stamp_sz)
+                 })
+             }))
+             )
            )
          })
        )

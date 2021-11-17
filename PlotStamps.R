@@ -69,7 +69,11 @@ StyleStamps<-function(denominations,pal=palettes[[1]]){
   # browser()
   sizeDiffs=smallest/(length(sVals)-1)
   size_factors<-c(1,rep(NA,length(sVals)-1))
-  for(ii in 2:length(sVals)){size_factors[ii]<-size_factors[[ii-1]]-sizeDiffs}
+  # browser()
+  #make size gradations between 1 and smallest if more than 1 denomination
+  if(length(denominations)>1){
+    for(ii in 2:length(sVals)){size_factors[ii]<-size_factors[[ii-1]]-sizeDiffs}
+  }
   return(data.frame(stampVal=sVals,colors=pal_final,size_factors=size_factors))
   }
 
