@@ -74,30 +74,27 @@ server <- function(input, output) {
       # source("Rfile.r")
       orderedstamps<-sort(as.numeric(input$stampValues), decreasing = T)
       output$result1 <- renderText(orderedstamps)
-      # browser()
+      #browser()
       combos <- makeStampCombos(vals = orderedstamps,totalfare = as.numeric(input$totalfare))
-      output$Exact <- renderPrint(paste(combos$exact$stampN," x ",combos$exact$stampVal,"cent stamps,",combos$exact$remaining,"cents over" ))
-      output$Fewest <- renderPrint(paste(combos$fewest[1,2:3]$stampN," x ",combos$fewest[1,2:3]$stampVal,"cent stamps,",combos$fewest[2,2:3]$stampN," x ",combos$fewest[2,2:3]$stampVal,"cent stamps,",-combos$fewest[2,2:4]$remaining,"cents over"))
-      output$Score <- renderPrint(paste(combos$minscore[1,2:3]$stampN," x ",combos$minscore[1,2:3]$stampVal,"cent stamps,",combos$minscore[2,2:3]$stampN," x ",combos$minscore[2,2:3]$stampVal,"cent stamps,",-combos$minscore[2,3:4]$remaining,"cents over"))
+      #Print exact combo
+      output$Exact <- renderPrint(c(paste(combos$exact$stampN," x ",combos$exact$stampVal,"cent stamps,"),paste(combos$exact$remaining[nrow(combos$exact)],"cents over" )))
+      #Print fewest stamp combo
+      output$Fewest <- renderPrint(c(paste(combos$fewest[1,2:nrow(combos$fewest)]$stampN," x ",combos$fewest[1,2:nrow(combos$fewest)]$stampVal,"cent stamps,",combos$fewest[2,2:nrow(combos$fewest)]$stampN," x ",combos$fewest[2,2:nrow(combos$fewest)]$stampVal,"cent stamps,"),paste(-combos$fewest$remaining[nrow(combos$fewest)],"cents over")))
+      #Print Lowest score
+      output$Score <- renderPrint(c(paste(combos$minscore[1:nrow(combos$minscore),]$stampN," x ",combos$minscore[1:nrow(combos$minscore),]$stampVal,"cent stamps,"), paste(-combos$minscore$remaining[nrow(combos$minscore)],"cents over")))
       
       # Plot Stamps -------------------------------------------------------------
   output$main<-renderUI({
-    # stamps<-Stampify(stamp_data = combos$exact,total_fare = input$totalfare)
-    # browser()
-    # output$stamp_plots<-lapply(1:length(stamps),function(x) {grid::grid.draw(stamps[[x]])})
+    
+    # Generate Stamp Images -------------------------------------------------------------
     stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))
 stamps<-Stampify(stamp_data,100)
-# browser()
-output$stampL <- renderPlot(grid.draw(stamps))
-    # browser()
-    tagList(plotOutput("stampL"),plotOutput("stampL"))
-    
-    })
-    
-      
-    })
-    
-}
+img_loc<-paste0(tempdir(),"/stampy/")
+# lapply(stamps,function(x) png(x))
+})#end renderUI
+
+})#End observe event
+}# End server logic
     
 
 

@@ -58,12 +58,11 @@ palettes<-list(
   vaporwave=c("#F72585","#7209B7","#3A0CA3","#4361EE","#4CC9F0")
 )
 
-StyleStamps<-function(stamp_data,pal=palettes[[1]]){
+StyleStamps<-function(denominations,pal=palettes[[1]]){
   #set scalar for sizing denominations
   #ratio of smallest to largest size
   smallest=0.5
-  s<-do.call(rbind,stamp_data)
-  sVals<-sort(unique(s$stampVal),decreasing=T)
+  sVals<-sort(unique(denominations),decreasing=T)
   #repeat the palette if necessary to match the length of the 
   #number of unique stamp values
   pal_final<-rep_len(pal,length.out = length(sVals))
@@ -76,31 +75,26 @@ StyleStamps<-function(stamp_data,pal=palettes[[1]]){
 
 
 #Iterate across all stamp_data
-PlotMultStamps<-function(stamp_data,total_fare){
+PlotMultStamps<-function(denominations){
   maxCol=5 #maximum number of stamps per row
   
   #get color and size info for stamp denominations
-  stamp_styles<-StyleStamps(stamp_data)
+  stamp_styles<-StyleStamps(denominations)
   
-  stamp_batch<-lapply(1:length(stamp_data),function(i){
-    #Get each set of stamps from stamp_data
-    stampSet_i<-stamp_data[[i]]
-    #plot each stamp denomination
-    lapply(1:nrow(stampSet_i),function(j){
+  stamp_batch<-lapply(1:length(denominations),function(i){
       #Set largest stampWidth
       defaultWidth=0.8
       #get relative width, scaled by stamp value
-      styleRow<-which(stamp_styles$stampVal==stampSet_i$startVal[j])
+      styleRow<-which(stamp_styles$stampVal==denominations[i])
       rel_width<-defaultWidth*stamp_styles$size_factors[styleRow]
       #Actually plot a stamp
-      PlotStamp(stampSet_i$stampVal[j],stampWidth =rel_width,stampHeight=rel_width,
+      PlotStamp(denominations[i],stampWidth =rel_width,stampHeight=rel_width,
                 outerColor=stamp_styles$colors[styleRow])
-    })
   })
-  batch1<-do.call(grid::gList,stamp_batch[[1]])  
+  # batch1<-do.call(grid::gList,stamp_batch[[1]])  
   # cowplot::plot_grid(batch1[[1]],batch1[[2]],ncol=2)
   # gridExtra::grid.arrange(batch1,ncol=2)
-  batch1
+  names(stamp_batch)<-denominations
 }
 
 # stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))

@@ -163,7 +163,7 @@ require(dplyr)
 OUT <- OUT.0 %>% bind_rows()
 
 #bigstampN= stampN[stampN$startVal==stampN$stampVal]$stampVal
-bigstampN <- OUT %>% group_by(startVal) %>% filter(row_number()==1) %>% mutate(comboname = paste0(stampN,"x",startVal)) %>% select(c(startVal,comboname))
+bigstampN <- OUT %>% group_by(startVal) %>% filter(row_number()==1) %>% mutate(comboname = paste0(stampN,"x",startVal)) %>% dplyr::select(c(startVal,comboname))
 
 
 stampN <- OUT %>% group_by(startVal) %>% summarise(stampN=sum(stampN))
@@ -177,22 +177,25 @@ summaryStamps$score <- summaryStamps$stampN + abs(summaryStamps$overPymt)
 exact = subset(OUT, OUT$startVal==summaryStamps[(summaryStamps$overPymt == 0),]$startVal)
 exact = subset(exact, exact$stampN!=0)
 
-exactcombo <- paste(exact$stampN," x ",exact$stampVal,"cent stamps,",exact$remaining,"cents over" )
+
+exact_printout <- c(paste(exact$stampN," x ",exact$stampVal,"cent stamps,"),paste(exact$remaining[nrow(exact)],"cents over" ))
 
 
 minimize_num <- subset(OUT,OUT$startVal==summaryStamps[which.min(summaryStamps$stampN),][1,]$startVal)
 minimize_num = minimize_num[minimize_num$stampN!=0,]
 mininum_combo <- paste(minimize_num[1,2:3]$stampN," x ",minimize_num[1,2:3]$stampVal,"cent stamps,",minimize_num[2,2:3]$stampN," x ",minimize_num[2,2:3]$stampVal,"cent stamps,",-minimize_num[2,2:4]$remaining,"cents over")
 
+#browser()
+minimize_score <- OUT[OUT$startVal==summaryStamps[summaryStamps$score==min(summaryStamps$score),]$startVal,]
 
-minimize_score <- subset(OUT, OUT$startVal==summaryStamps[summaryStamps$score==min(summaryStamps$score),][2,]$startVal)
+
 minimize_score <- minimize_score[minimize_score$stampN!=0,]
 miniscore_combo <- paste(minimize_score[1,2:3]$stampN," x ",minimize_score[1,2:3]$stampVal,"cent stamps,",minimize_score[2,2:3]$stampN," x ",minimize_score[2,2:3]$stampVal,"cent stamps,",-minimize_score[2,3:4]$remaining,"cents over")
 
 
 
 #list(Exact = exactcombo, Fewest = mininum_combo, Score = miniscore_combo, summaryStamps)
-list(data=OUT.0,exact=exact,fewest=minimize_num,minscore=minimize_score)
+list(data=OUT.0,summary=summaryStamps,exact=exact,fewest=minimize_num,minscore=minimize_score)
 #browser()
 }
 
