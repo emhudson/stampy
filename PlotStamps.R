@@ -97,6 +97,10 @@ Stampify<-function(stamp_data,total_fare){
     })
   })
   batch1<-do.call(grid::gList,stamp_batch[[1]])  
-  cowplot::plot_grid(batch1[[1]],batch1[[2]],ncol=2)
-  gridExtra::grid.arrange(batch1,ncol=2)
-  }
+  # cowplot::plot_grid(batch1[[1]],batch1[[2]],ncol=2)
+  # gridExtra::grid.arrange(batch1,ncol=2)
+  batch1
+}
+
+stamps<-Stampify(stamp_data,100)
+grid.draw(stamps[[2]])
