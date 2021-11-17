@@ -107,7 +107,7 @@ server <- function(input, output) {
      base_stamp_sz=50
      #max number of stamps you want per row
      stamps_per_row=5
-     
+     # browser()
      #testing repeating an image object
      solns<-unique(combos$exact$startVal)
      tagList(
@@ -125,11 +125,14 @@ server <- function(input, output) {
                    )
                ),
               #in-line styling to set the number of stamps per row; additional styling can be done in custom.css
-             div(class="stamp-container",style=paste0("width:",stamps_per_row*base_stamp_sz,"px;"),
+              # browser(),
+              div(class="stamp-container",style=paste0("width:",
+                                                       #an awkward solution to keep stamps wrapping as expected
+                                                       (stamps_per_row*base_stamp_sz)-10,
+                                                           "px;"),
              tagList(
                lapply(1:nrow(curr_soln),function(i){
                  curr_stamp<-curr_soln[i,]
-                 # browser()
                  curr_stamp_sz<-stamps$styles$size_factors[which(stamps$styles$stampVal==curr_stamp$stampVal)]
                  #repeat images the desired amount
                  lapply(1:curr_stamp$stampN,function(ii){
