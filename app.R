@@ -88,9 +88,32 @@ server <- function(input, output) {
     
     # Generate Stamp Images -------------------------------------------------------------
     stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))
-stamps<-Stampify(stamp_data,100)
-img_loc<-paste0(tempdir(),"/stampy/")
-# lapply(stamps,function(x) png(x))
+stamps<-PlotMultStamps(orderedstamps,nScallops=11)
+#where we gonna save stamp images temporarily?
+img_loc<-paste0(getwd(),"/www/")
+#make that dir if it doesn't exist
+dir.create(img_loc,showWarnings=F)
+# browser()
+#now save those grid images
+ lapply(1:length(stamps),function(i) {
+   png(paste0(img_loc,names(stamps$plots)[i],".png"),width=200,height=200, units="px",res=150)
+   grid.draw(stamps$plots[[i]])
+   dev.off()
+  })
+ #base png output size in px
+ base_stamp_sz=50
+ # browser()
+ #testing repeating an image object
+ tagList(
+ lapply(1:3,function(i){
+   img(src=paste0(orderedstamps[2],".png"),width=stamps$styles$size_factors[2]*base_stamp_sz)
+ }),
+  lapply(1:4,function(i){
+   img(src=paste0(orderedstamps[1],".png"),width=stamps$styles$size_factors[1]*base_stamp_sz)
+ })
+ )
+ 
+ 
 })#end renderUI
 
 })#End observe event

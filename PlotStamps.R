@@ -3,8 +3,8 @@
 require(grid);require(colorspace);require(gridExtra)
 
 #plot a single stamp
-PlotStamp<-function(stampVal=30,stampWidth=.8,stampHeight=.8,outerColor="#3A0CA3",innerColorAlpha=0.2,fontSize=35,plot=F){
-nScallops=15
+PlotStamp<-function(stampVal=30,stampWidth=.8,stampHeight=.8,outerColor="#3A0CA3",innerColorAlpha=0.2,fontSize=30,plot=F,nScallops=20){
+nScallops=nScallops
 nudgeEdge=0
 #Make lighter innercolor based on alpha value that is a lighter, but opaque version
 #of the outercolor (by mixing with white)
@@ -51,7 +51,7 @@ return(stamp_grob)
 
 }
 
-PlotStamp(plot=T)
+# PlotStamp(plot=T)
 
 #add more palettes (coolors.co is a great source)
 palettes<-list(
@@ -75,26 +75,27 @@ StyleStamps<-function(denominations,pal=palettes[[1]]){
 
 
 #Iterate across all stamp_data
-PlotMultStamps<-function(denominations){
+PlotMultStamps<-function(denominations,nScallops,...){
   maxCol=5 #maximum number of stamps per row
   
   #get color and size info for stamp denominations
-  stamp_styles<-StyleStamps(denominations)
+  stamp_styles<-StyleStamps(denominations,...)
   
   stamp_batch<-lapply(1:length(denominations),function(i){
       #Set largest stampWidth
-      defaultWidth=0.8
+      defaultWidth=0.99
       #get relative width, scaled by stamp value
       styleRow<-which(stamp_styles$stampVal==denominations[i])
       rel_width<-defaultWidth*stamp_styles$size_factors[styleRow]
       #Actually plot a stamp
-      PlotStamp(denominations[i],stampWidth =rel_width,stampHeight=rel_width,
-                outerColor=stamp_styles$colors[styleRow])
+      PlotStamp(denominations[i],stampWidth =defaultWidth,stampHeight=defaultWidth,
+                outerColor=stamp_styles$colors[styleRow],plot=F,nScallops=nScallops)
   })
   # batch1<-do.call(grid::gList,stamp_batch[[1]])  
   # cowplot::plot_grid(batch1[[1]],batch1[[2]],ncol=2)
   # gridExtra::grid.arrange(batch1,ncol=2)
   names(stamp_batch)<-denominations
+  list(plots=stamp_batch,styles=stamp_styles)
 }
 
 # stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))
