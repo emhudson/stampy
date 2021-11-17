@@ -55,24 +55,28 @@ return(stamp_grob)
 
 #add more palettes (coolors.co is a great source)
 palettes<-list(
-  vaporwave=c("#F72585","#7209B7","#3A0CA3","#4361EE","#4CC9F0")
+  vaporwave=c("#F72585","#7209B7","#3A0CA3","#4361EE","#4CC9F0",
+              "#f9c816","#52489C","#4062BB","#59C3C3","#F45B69")
 )
 
-StyleStamps<-function(denominations,pal=palettes[[1]]){
+StyleStamps<-function(denominations,pal=palettes[[1]],smallestStamp=0.75){
   #set scalar for sizing denominations
   #ratio of smallest to largest size
-  smallest=0.5
+  smallest=smallestStamp
   sVals<-sort(as.numeric(unique(denominations)),decreasing=T)
   #repeat the palette if necessary to match the length of the 
   #number of unique stamp values
   pal_final<-rep_len(pal,length.out = length(sVals))
-  # browser()
-  sizeDiffs=smallest/(length(sVals)-1)
+   # browser()
+   scales::show_col(pal_final)
+  sizeDiffs=(1-smallest)/(length(sVals)-1)
   size_factors<-c(1,rep(NA,length(sVals)-1))
   # browser()
   #make size gradations between 1 and smallest if more than 1 denomination
   if(length(denominations)>1){
-    for(ii in 2:length(sVals)){size_factors[ii]<-size_factors[[ii-1]]-sizeDiffs}
+    for(ii in 2:length(sVals)){
+      size_factors[ii]<-size_factors[[ii-1]]-sizeDiffs
+      }
   }
   return(data.frame(stampVal=sVals,colors=pal_final,size_factors=size_factors))
   }
