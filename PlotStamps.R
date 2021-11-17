@@ -62,10 +62,11 @@ StyleStamps<-function(denominations,pal=palettes[[1]]){
   #set scalar for sizing denominations
   #ratio of smallest to largest size
   smallest=0.5
-  sVals<-sort(unique(denominations),decreasing=T)
+  sVals<-sort(as.numeric(unique(denominations)),decreasing=T)
   #repeat the palette if necessary to match the length of the 
   #number of unique stamp values
   pal_final<-rep_len(pal,length.out = length(sVals))
+  # browser()
   sizeDiffs=smallest/(length(sVals)-1)
   size_factors<-c(1,rep(NA,length(sVals)-1))
   for(ii in 2:length(sVals)){size_factors[ii]<-size_factors[[ii-1]]-sizeDiffs}

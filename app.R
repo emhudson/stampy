@@ -69,9 +69,8 @@ server <- function(input, output) {
     output$consoleTxt<-renderPrint(input$stampValues)
 
     
-    observeEvent(input$calculate,{
+  observe({
       #R code
-      # source("Rfile.r")
       orderedstamps<-sort(as.numeric(input$stampValues), decreasing = T)
       output$result1 <- renderText(orderedstamps)
       #browser()
@@ -82,52 +81,58 @@ server <- function(input, output) {
       output$Fewest <- renderPrint(c(paste(combos$fewest[1,2:nrow(combos$fewest)]$stampN," x ",combos$fewest[1,2:nrow(combos$fewest)]$stampVal,"cent stamps,",combos$fewest[2,2:nrow(combos$fewest)]$stampN," x ",combos$fewest[2,2:nrow(combos$fewest)]$stampVal,"cent stamps,"),paste(-combos$fewest$remaining[nrow(combos$fewest)],"cents over")))
       #Print Lowest score
       output$Score <- renderPrint(c(paste(combos$minscore[1:nrow(combos$minscore),]$stampN," x ",combos$minscore[1:nrow(combos$minscore),]$stampVal,"cent stamps,"), paste(-combos$minscore$remaining[nrow(combos$minscore)],"cents over")))
+  
+        # Generate Stamp Images -------------------------------------------------------------
       
+        stamps<-PlotMultStamps(input$stampValues,borderWidth=0.4,nScallops=11)
+        #where we gonna save stamp images temporarily?
+        img_loc<-paste0(getwd(),"/www/")
+        #make that dir if it doesn't exist
+        dir.create(img_loc,showWarnings=F)
+        #now save those stamp plots as images
+         lapply(1:length(stamps$plots),function(i) {
+           png(paste0(img_loc,names(stamps$plots)[i],".png"),width=200,height=200, units="px",res=150)
+           grid.draw(stamps$plots[[i]])
+           dev.off()
+          })  
+          
       # Plot Stamps -------------------------------------------------------------
   output$main<-renderUI({
-    
-    # Generate Stamp Images -------------------------------------------------------------
-    stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))
-stamps<-PlotMultStamps(orderedstamps,borderWidth=0.4,nScallops=11)
-#where we gonna save stamp images temporarily?
-img_loc<-paste0(getwd(),"/www/")
-#make that dir if it doesn't exist
-dir.create(img_loc,showWarnings=F)
-# browser()
-#now save those stamp plots as images
- lapply(1:length(stamps),function(i) {
-   png(paste0(img_loc,names(stamps$plots)[i],".png"),width=200,height=200, units="px",res=150)
-   grid.draw(stamps$plots[[i]])
-   dev.off()
-  })
- #base png output size in px
- base_stamp_sz=50
- browser()
- #testing repeating an image object
- solns<-unique(combos$exact$startVal)
- tagList(
-     h3(class="combo-heading","Exact solution(s):"),
-     lapply(solns,function(soln_i){
-       #create a solution div for each unique solution
-       curr_soln<-subset(combos$exact,startVal==soln_i)
-       div(class="solution",
-       tagList(
-         lapply(1:nrow(curr_soln),function(i){
-           curr_stamp<-curr_soln[i,]
-           curr_stamp_sz<-stamps$styles$size_factors[which(stamps$styles$stampVal==curr_stamp)]
-           lapply(1:curr_stamp$stampN,function(ii){
-             img(src=paste0(curr_stamp$stampVal,".png"),width=curr_stamp_sz*base_stamp_sz)
-           })
-       }))
+     #base png output size in px
+     base_stamp_sz=50
+     
+     #testing repeating an image object
+     solns<-unique(combos$exact$startVal)
+     tagList(
+         h3(class="combo-heading","Exact solution(s):"),
+         lapply(solns,function(soln_i){
+           #create a solution div for each unique solution
+           curr_soln<-subset(combos$exact,startVal==soln_i)
+           div(class="solution",
+               # browser(),
+             p(class="solution-text",
+                 paste0(c(sapply(1:nrow(curr_soln),function(row_i){
+                   paste0(curr_soln$stampN[row_i]," x ",curr_soln$stampVal[row_i],"c")
+                 }),paste0(tail(curr_soln,1)$remaining," remaining")),
+                 collapse=", "
+                 )
+             ),
+           tagList(
+             lapply(1:nrow(curr_soln),function(i){
+               curr_stamp<-curr_soln[i,]
+               # browser()
+               curr_stamp_sz<-stamps$styles$size_factors[which(stamps$styles$stampVal==curr_stamp$stampVal)]
+               #repeat images the desired amount
+               lapply(1:curr_stamp$stampN,function(ii){
+                 img(src=paste0(curr_stamp$stampVal,".png"),width=curr_stamp_sz*base_stamp_sz)
+               })
+           }))
+           )
+         })
        )
-     })
-   )
- 
- 
- 
-})#end renderUI
+    })#end renderUI
 
-})#End observe event
+}) %>% bindEvent(input$calculate)#End observe 
 }# End server logic
     
 
