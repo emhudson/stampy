@@ -88,13 +88,13 @@ server <- function(input, output) {
     
     # Generate Stamp Images -------------------------------------------------------------
     stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))
-stamps<-PlotMultStamps(orderedstamps,nScallops=11)
+stamps<-PlotMultStamps(orderedstamps,borderWidth=0.4,nScallops=11)
 #where we gonna save stamp images temporarily?
 img_loc<-paste0(getwd(),"/www/")
 #make that dir if it doesn't exist
 dir.create(img_loc,showWarnings=F)
 # browser()
-#now save those grid images
+#now save those stamp plots as images
  lapply(1:length(stamps),function(i) {
    png(paste0(img_loc,names(stamps$plots)[i],".png"),width=200,height=200, units="px",res=150)
    grid.draw(stamps$plots[[i]])
@@ -102,16 +102,27 @@ dir.create(img_loc,showWarnings=F)
   })
  #base png output size in px
  base_stamp_sz=50
- # browser()
+ browser()
  #testing repeating an image object
+ solns<-unique(combos$exact$startVal)
  tagList(
- lapply(1:3,function(i){
-   img(src=paste0(orderedstamps[2],".png"),width=stamps$styles$size_factors[2]*base_stamp_sz)
- }),
-  lapply(1:4,function(i){
-   img(src=paste0(orderedstamps[1],".png"),width=stamps$styles$size_factors[1]*base_stamp_sz)
- })
- )
+     h3(class="combo-heading","Exact solution(s):"),
+     lapply(solns,function(soln_i){
+       #create a solution div for each unique solution
+       curr_soln<-subset(combos$exact,startVal==soln_i)
+       div(class="solution",
+       tagList(
+         lapply(1:nrow(curr_soln),function(i){
+           curr_stamp<-curr_soln[i,]
+           curr_stamp_sz<-stamps$styles$size_factors[which(stamps$styles$stampVal==curr_stamp)]
+           lapply(1:curr_stamp$stampN,function(ii){
+             img(src=paste0(curr_stamp$stampVal,".png"),width=curr_stamp_sz*base_stamp_sz)
+           })
+       }))
+       )
+     })
+   )
+ 
  
  
 })#end renderUI

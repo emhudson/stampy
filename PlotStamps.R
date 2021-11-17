@@ -3,7 +3,7 @@
 require(grid);require(colorspace);require(gridExtra)
 
 #plot a single stamp
-PlotStamp<-function(stampVal=30,stampWidth=.8,stampHeight=.8,outerColor="#3A0CA3",innerColorAlpha=0.2,fontSize=30,plot=F,nScallops=20){
+PlotStamp<-function(stampVal=30,stampWidth=.8,stampHeight=.8,outerColor="#3A0CA3",innerColorAlpha=0.2,borderWidth=0.2,fontSize=30,plot=F,nScallops=20){
 nScallops=nScallops
 nudgeEdge=0
 #Make lighter innercolor based on alpha value that is a lighter, but opaque version
@@ -29,8 +29,8 @@ grid::grid.newpage()
                         vp=grid::viewport(x = 0.5, y = 0.5, width=1,
                         height=1,clip="on")),
     grid::rectGrob(name = "innerRec",
-                        x = 0.5, y = 0.5, width=stampWidth*.8,
-                        height=stampWidth*.8,
+                        x = 0.5, y = 0.5, width=stampWidth*(1-borderWidth),
+                        height=stampWidth*(1-borderWidth),
                         gp = grid::gpar(col = "gray30",fill=innerColor)),
   grid::circleGrob(name = "scallops",
     x = scallopCoords$x,
@@ -75,7 +75,7 @@ StyleStamps<-function(denominations,pal=palettes[[1]]){
 
 
 #Iterate across all stamp_data
-PlotMultStamps<-function(denominations,nScallops,...){
+PlotMultStamps<-function(denominations,borderWidth,nScallops,...){
   maxCol=5 #maximum number of stamps per row
   
   #get color and size info for stamp denominations
@@ -89,7 +89,8 @@ PlotMultStamps<-function(denominations,nScallops,...){
       rel_width<-defaultWidth*stamp_styles$size_factors[styleRow]
       #Actually plot a stamp
       PlotStamp(denominations[i],stampWidth =defaultWidth,stampHeight=defaultWidth,
-                outerColor=stamp_styles$colors[styleRow],plot=F,nScallops=nScallops)
+                outerColor=stamp_styles$colors[styleRow],plot=F,nScallops=nScallops,
+                borderWidth=borderWidth)
   })
   # batch1<-do.call(grid::gList,stamp_batch[[1]])  
   # cowplot::plot_grid(batch1[[1]],batch1[[2]],ncol=2)
