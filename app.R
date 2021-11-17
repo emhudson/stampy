@@ -24,10 +24,10 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
            
-            selectizeInput("stampValues","Stamp Values",choices=NULL,
+            selectizeInput("stampValues","Stamp Values",choices=c(10,20,30),selected=list(10,20,30),
                            multiple=T,
                            options=list(create=T,placeholder="Stamp values")),
-            selectizeInput("totalfare","Total Fare",choices=NULL,
+            selectizeInput("totalfare","Total Fare",choices=60,selected=list(60),
                            multiple=F,
                            options=list(create=T,placeholder="Total fare")),
             actionButton("calculate","Calculate")
@@ -85,16 +85,16 @@ server <- function(input, output) {
       
       # Plot Stamps -------------------------------------------------------------
   output$main<-renderUI({
-    stamps<-Stampify(stamp_data = list(combos$exact),total_fare = input$totalfare)
-    browser()
-    output$stamp_plots<-lapply(1:length(stamps),function(x) {grid::grid.draw(stamps[[x]])})
     
-    })
-    
-      
-    })
-    
-}
+    # Generate Stamp Images -------------------------------------------------------------
+    stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))
+stamps<-Stampify(stamp_data,100)
+img_loc<-paste0(tempdir(),"/stampy/")
+# lapply(stamps,function(x) png(x))
+})#end renderUI
+
+})#End observe event
+}# End server logic
     
 
 
