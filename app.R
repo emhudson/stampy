@@ -107,7 +107,7 @@ server <- function(input, output) {
      base_stamp_sz=50
      #max number of stamps you want per row
      stamps_per_row=5
-     # browser()
+
      #testing repeating an image object
      solns<-unique(combos$exact$startVal)
      tagList(
