@@ -73,7 +73,7 @@ StyleStamps<-function(stamp_data,pal=palettes[[1]]){
   return(data.frame(stampVal=sVals,colors=pal_final,size_factors=size_factors))
   }
 
-stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))
+
 
 #Iterate across all stamp_data
 Stampify<-function(stamp_data,total_fare){
@@ -92,6 +92,7 @@ Stampify<-function(stamp_data,total_fare){
       #get relative width, scaled by stamp value
       styleRow<-which(stamp_styles$stampVal==stampSet_i$startVal[j])
       rel_width<-defaultWidth*stamp_styles$size_factors[styleRow]
+      #Actually plot a stamp
       PlotStamp(stampSet_i$stampVal[j],stampWidth =rel_width,stampHeight=rel_width,
                 outerColor=stamp_styles$colors[styleRow])
     })
@@ -102,5 +103,6 @@ Stampify<-function(stamp_data,total_fare){
   batch1
 }
 
-stamps<-Stampify(stamp_data,100)
-grid.draw(stamps[[2]])
+# stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))
+# stamps<-Stampify(stamp_data,100)
+# grid.draw(stamps[[2]])

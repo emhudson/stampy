@@ -10,6 +10,7 @@
 library(shiny);library(magrittr)
 
 source("StampCalculator.R")
+source("PlotStamps.R")
 #Normal r stuff can be put here, outside ui
 #can read in global vars to use in any part of ui
 
@@ -41,7 +42,9 @@ ui <- fluidPage(
            p(strong("Combo for fewest stamps:")),
            textOutput("Fewest"),
            p(strong("Fewest stamps with least overage")),
-           textOutput("Score")
+           textOutput("Score"),
+           #Output main stamp plots
+           uiOutput("main")
         )
     )
 )
@@ -76,8 +79,22 @@ server <- function(input, output) {
       output$Exact <- renderPrint(paste(combos$exact$stampN," x ",combos$exact$stampVal,"cent stamps,",combos$exact$remaining,"cents over" ))
       output$Fewest <- renderPrint(paste(combos$fewest[1,2:3]$stampN," x ",combos$fewest[1,2:3]$stampVal,"cent stamps,",combos$fewest[2,2:3]$stampN," x ",combos$fewest[2,2:3]$stampVal,"cent stamps,",-combos$fewest[2,2:4]$remaining,"cents over"))
       output$Score <- renderPrint(paste(combos$minscore[1,2:3]$stampN," x ",combos$minscore[1,2:3]$stampVal,"cent stamps,",combos$minscore[2,2:3]$stampN," x ",combos$minscore[2,2:3]$stampVal,"cent stamps,",-combos$minscore[2,3:4]$remaining,"cents over"))
-    }) 
+      
+      # Plot Stamps -------------------------------------------------------------
+  output$main<-renderUI({
+    stamps<-Stampify(stamp_data = combos$exact,total_fare = input$totalfare)
+    browser()
+    output$stamp_plots<-lapply(1:length(stamps),function(x) {grid::grid.draw(stamps[[x]])})
+    
+    })
+    
+      
+    })
+    
 }
+    
+
+
 
 # Run the application 
 shinyApp(ui = ui, server = server)
