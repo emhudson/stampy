@@ -76,7 +76,7 @@ StyleStamps<-function(stamp_data,pal=palettes[[1]]){
 
 
 #Iterate across all stamp_data
-Stampify<-function(stamp_data,total_fare){
+PlotMultStamps<-function(stamp_data,total_fare){
   maxCol=5 #maximum number of stamps per row
   
   #get color and size info for stamp denominations
