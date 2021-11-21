@@ -70,7 +70,7 @@ vals <- c(58,37,32,20,13,3)
 #Loop for starting value
 makeStampCombos <- function(vals, totalfare){
 OUT.0<-lapply(1:length(vals),function(i){
-  print(paste("loop through",i,"cur stamp is ",vals[i]))
+  print(paste("loop through",i,"starting stamp is ",vals[i]))
   remaining <- totalfare%%vals[i]
   stampN <- totalfare%/%vals[i]
   out<-data.frame(startVal=vals[i],
@@ -174,7 +174,9 @@ summaryStamps <- left_join(stampN,overPymt)
 summaryStamps <- left_join(bigstampN,summaryStamps)
 summaryStamps$score <- summaryStamps$stampN + abs(summaryStamps$overPymt)
 
-exact = subset(OUT, OUT$startVal==summaryStamps[(summaryStamps$overPymt == 0),]$startVal)
+exact = subset(OUT, OUT$startVal %in% summaryStamps[(summaryStamps$overPymt == 0),]$startVal)
+  
+  #subset(OUT, OUT$startVal==summaryStamps[(summaryStamps$overPymt == 0),]$startVal)
 exact = subset(exact, exact$stampN!=0)
 
 
