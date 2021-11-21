@@ -56,11 +56,14 @@ return(stamp_grob)
 #add more palettes (coolors.co is a great source)
 palettes<-list(
   vaporwave=c("#F72585","#7209B7","#3A0CA3","#4361EE","#4CC9F0",
-              "#f9c816","#52489C","#4062BB","#59C3C3","#F45B69")
+              "#f9c816","#52489C","#4062BB","#59C3C3","#F45B69"),
+  postal=c()
 )
 
-StyleStamps<-function(denominations,pal=palettes[[1]],smallestStamp=0.75){
-  #set scalar for sizing denominations
+StyleStamps<-function(denominations,pal="vaporwave",smallestStamp=0.75){
+  # browser()
+ pal=palettes[[match(pal,names(palettes))]]
+   #set scalar for sizing denominations
   #ratio of smallest to largest size
   smallest=smallestStamp
   sVals<-sort(as.numeric(unique(denominations)),decreasing=T)
@@ -84,11 +87,11 @@ StyleStamps<-function(denominations,pal=palettes[[1]],smallestStamp=0.75){
 
 
 #Iterate across all stamp_data
-PlotMultStamps<-function(denominations,borderWidth,nScallops,...){
+MakeStampPNG<-function(denominations,borderWidth,nScallops,pal="vaporwave",...){
   maxCol=5 #maximum number of stamps per row
   
   #get color and size info for stamp denominations
-  stamp_styles<-StyleStamps(denominations,...)
+  stamp_styles<-StyleStamps(denominations,pal=pal,...)
   
   stamp_batch<-lapply(1:length(denominations),function(i){
       #Set largest stampWidth
@@ -111,3 +114,46 @@ PlotMultStamps<-function(denominations,borderWidth,nScallops,...){
 # stamp_data<-list(data.frame(startVal=c(13,10),stampVal=c(13,10),divisor=c(10,13),remaining=c(0,0)))
 # stamps<-Stampify(stamp_data,100)
 # grid.draw(stamps[[2]])
+# 
+
+
+# The big kahuna ----------------------------------------------------------
+
+AddPostage<- function(calculator_result,label,stamp_styles, base_stamp_sz=50,stamps_per_row=5){
+     #testing repeating an image object
+     solns<-unique(calculator_result$startVal)
+     tagList(
+         h3(class="combo-heading",label),
+         lapply(solns,function(soln_i){
+           #create a solution div for each unique solution
+           curr_soln<-subset(calculator_result,startVal==soln_i)
+           div(class="solution",
+        
+              #Plot Stamp images
+              #in-line styling to set the number of stamps per row; additional styling can be done in custom.css
+              div(class="stamp-container",style=paste0("width:",
+                                                       #an awkward solution to keep stamps wrapping as expected
+                                                       (stamps_per_row*base_stamp_sz)-10,
+                                                           "px;"),
+                 tagList(
+                   lapply(1:nrow(curr_soln),function(i){
+                     curr_stamp<-curr_soln[i,]
+                     curr_stamp_sz<-stamp_styles$size_factors[which(stamp_styles$stampVal==curr_stamp$stampVal)]
+                     #repeat images the desired amount
+                     lapply(1:curr_stamp$stampN,function(ii){
+                       img(class="stamp",src=paste0("temp/",curr_stamp$stampVal,".png"),
+                           width=curr_stamp_sz*base_stamp_sz,height=curr_stamp_sz*base_stamp_sz)
+                     })
+                 }))),
+              #plot text solution
+                p(class="solution-text",
+                   paste0(c(sapply(1:nrow(curr_soln),function(row_i){
+                     paste0(curr_soln$stampN[row_i]," x ",curr_soln$stampVal[row_i],"c")
+                   }),paste0(-tail(curr_soln,1)$remaining," over")),
+                   collapse=", "
+                   
+                    ))
+              )#End solution div
+         })
+       )
+}
