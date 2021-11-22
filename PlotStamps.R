@@ -57,10 +57,10 @@ return(stamp_grob)
 palettes<-list(
   vaporwave=c("#F72585","#7209B7","#3A0CA3","#4361EE","#4CC9F0",
               "#f9c816","#52489C","#4062BB","#59C3C3","#F45B69"),
-  postal=c()
+  postal=c("#ddd8b8ff", "#b3cbb9ff", "#84a9c0ff", "#6a66a3ff", "#542e71ff")
 )
 
-StyleStamps<-function(denominations,pal="vaporwave",smallestStamp=0.75){
+StyleStamps<-function(denominations,pal="postal",smallestStamp=0.75){
   # browser()
  pal=palettes[[match(pal,names(palettes))]]
    #set scalar for sizing denominations
@@ -87,7 +87,7 @@ StyleStamps<-function(denominations,pal="vaporwave",smallestStamp=0.75){
 
 
 #Iterate across all stamp_data
-MakeStampPNG<-function(denominations,borderWidth,nScallops,pal="vaporwave",...){
+MakeStampPNG<-function(denominations,borderWidth,nScallops,pal="postal",...){
   maxCol=5 #maximum number of stamps per row
   
   #get color and size info for stamp denominations
@@ -148,8 +148,8 @@ AddPostage<- function(calculator_result,label,stamp_styles, base_stamp_sz=50,sta
               #plot text solution
                 p(class="solution-text",
                    paste0(c(sapply(1:nrow(curr_soln),function(row_i){
-                     paste0(curr_soln$stampN[row_i]," x ",curr_soln$stampVal[row_i],"c")
-                   }),paste0(-tail(curr_soln,1)$remaining," over")),
+                     paste0(curr_soln$stampN[row_i]," x ",curr_soln$stampVal[row_i],"c stamps")
+                   }),paste0(abs(tail(curr_soln,1)$remaining),"c over")),
                    collapse=", "
                    
                     ))

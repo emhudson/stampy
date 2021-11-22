@@ -70,6 +70,8 @@ vals <- c(58,37,32,20,13,3)
 #Loop for starting value
 makeStampCombos <- function(vals, totalfare){
 OUT.0<-lapply(1:length(vals),function(i){
+
+  
   print(paste("loop through",i,"starting stamp is ",vals[i]))
   remaining <- totalfare%%vals[i]
   stampN <- totalfare%/%vals[i]
@@ -85,18 +87,20 @@ OUT.0<-lapply(1:length(vals),function(i){
     
     print(paste("j=",j,"cur next stamp is",vals[j]))
     if (is.na(vals[j])){
-      print("uh oh, cur stamp is NA")
-      print(paste("and cur StampN is",stampN))
+      print("uh oh, cur stamp is NA -- must be at the end")
+      #print(paste("and cur StampN is",stampN))
+      #browser()
       remaining <- remaining - vals[j-1]
-      stampN <- stampN +1
-      print(paste("Did we fix it? new remaining =",remaining, "new stampN = ",stampN))
-      new_row<-data.frame(startVal=vals[i],
-                          stampVal=vals[j-1],
-                          stampN=stampN,
-                          remaining=remaining)
-      print("new row version X, final final")
-      print(new_row)
-      out<-new_row
+      if (remaining > 0){
+        stampN <- stampN +1
+        print(paste("Did we fix it? new remaining =",remaining, "new stampN = ",stampN))
+        new_row<-data.frame(startVal=vals[i],
+                            stampVal=vals[j-1],
+                            stampN=stampN,
+                            remaining=remaining)
+      }
+      else
+      print("no remainder, we're done")
       break()
     }
     if (j>=length(vals)) { #special case for last row: check if any remainder left
@@ -187,17 +191,29 @@ minimize_num <- subset(OUT,OUT$startVal==summaryStamps[which.min(summaryStamps$s
 minimize_num = minimize_num[minimize_num$stampN!=0,]
 mininum_combo <- paste(minimize_num[1,2:3]$stampN," x ",minimize_num[1,2:3]$stampVal,"cent stamps,",minimize_num[2,2:3]$stampN," x ",minimize_num[2,2:3]$stampVal,"cent stamps,",-minimize_num[2,2:4]$remaining,"cents over")
 
-#browser()
-minimize_score <- OUT[OUT$startVal==summaryStamps[summaryStamps$score==min(summaryStamps$score),]$startVal,]
+
+minimize_score <- subset(OUT, OUT$startVal %in% summaryStamps[summaryStamps$score==min(summaryStamps$score),]$startVal)
+#minimize_score <- OUT[OUT$startVal==summaryStamps[summaryStamps$score==min(summaryStamps$score),]$startVal,]
 
 
 minimize_score <- minimize_score[minimize_score$stampN!=0,]
 miniscore_combo <- paste(minimize_score[1,2:3]$stampN," x ",minimize_score[1,2:3]$stampVal,"cent stamps,",minimize_score[2,2:3]$stampN," x ",minimize_score[2,2:3]$stampVal,"cent stamps,",-minimize_score[2,3:4]$remaining,"cents over")
 
-
+if (vals[1]>totalfare){
+  onestamp_val <-tail(vals[which(vals > totalfare)],1)
+  onestamp <- data.frame(onestamp_val,onestamp_val,1,totalfare-onestamp_val)
+  names(onestamp) <- names(minimize_score)
+  #also, you'll need to remove duplicate combos
+  #take only last two rows of exact, minimize_score
+  #take only rows where startVal <= totalfare
+  exact <- subset(exact, exact$startVal <= totalfare)
+  minimize_score <- subset(minimize_score, minimize_score$startVal <= totalfare)
+} else {
+  onestamp <- NULL
+}
 
 #list(Exact = exactcombo, Fewest = mininum_combo, Score = miniscore_combo, summaryStamps)
-list(data=OUT.0,summary=summaryStamps,exact=exact,fewest=minimize_num,minscore=minimize_score)
+list(data=OUT.0,summary=summaryStamps,exact=exact,fewest=minimize_num,minscore=minimize_score,onestamp=onestamp)
 #browser()
 }
 

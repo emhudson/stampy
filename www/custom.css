@@ -3,11 +3,11 @@
 .solution{
   display: block;
   border-radius:8px;
-  background-color:#edf3fc;
+  background-color:#f7f4e1;
   margin: 1.5rem 0;
   padding:1rem;
   /*justify-content: flex-end;*/
-  border: 1px dotted blue;
+  border: 1px dashed gray;
 }
 
 .solution p{
@@ -15,7 +15,7 @@
   margin-left: auto;
   font-size: 1.1em;
   font-weight: 600;
-  color: blue;
+  color: black;
   font-family: serif;
 }
 
@@ -24,7 +24,7 @@
   flex-wrap: wrap;
   max-width: 100%;
   margin: 0 0 auto auto;
-  border: 2px    dashed blue;
+  border: 0    dashed white;
   flex-direction: columns;
   align-content: flex-end;
   align-items: flex-end;

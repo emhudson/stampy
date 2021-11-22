@@ -7,7 +7,8 @@
 #    http://shiny.rstudio.com/
 #
 
-library(shiny);library(magrittr)
+library(shiny);library(magrittr);library(shinythemes)
+
 
 source("StampCalculator.R")
 source("PlotStamps.R")
@@ -15,22 +16,22 @@ source("PlotStamps.R")
 #can read in global vars to use in any part of ui
 
 # Define UI for application that draws a histogram
-ui <- fluidPage(
+ui <- fluidPage(theme = shinytheme("sandstone"),
     #import custom styling
      tags$head(
               tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
       ),
     # Application title
-    titlePanel("Stampy: a calculator to figure out what stamps to add to your postcards and such"),
+    titlePanel("Stampy: a tool to show postage stamp combinations"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
            
-            selectizeInput("stampValues","Stamp Values",choices=c(10,20,30),selected=list(10,20,30),
+            selectizeInput("stampValues","Available Stamp Values",choices=c(3,10,13,20,32,58),selected=list(3,10,13,20,32,58),
                            multiple=T,
                            options=list(create=T,placeholder="Stamp values")),
-            selectizeInput("totalfare","Total Fare",choices=200,selected=list(200),
+            selectizeInput("totalfare","Total Fare",choices=130,
                            multiple=F,
                            options=list(create=T,placeholder="Total fare")),
             actionButton("calculate","Calculate")
@@ -38,14 +39,14 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-           textOutput("consoleTxt"),
-           textOutput("result1"),
-           p(strong("Combo for exact fare:")),
-           textOutput("Exact"),
-           p(strong("Combo for fewest stamps:")),
-           textOutput("Fewest"),
-           p(strong("Fewest stamps with least overage")),
-           textOutput("Score"),
+           # textOutput("consoleTxt"),
+           # textOutput("result1"),
+           # p(strong("Combo for exact fare:")),
+           # textOutput("Exact"),
+           # p(strong("Combo for fewest stamps:")),
+           # textOutput("Fewest"),
+           # p(strong("Fewest stamps with least overage")),
+           # textOutput("Score"),
            #Output main stamp plots
            uiOutput("main")
         )
@@ -62,6 +63,7 @@ server <- function(input, output) {
 
         # draw the histogram with the specified number of bins
         hist(x, breaks = bins, col = 'darkgray', border = 'white')
+        
     })
     
     
@@ -74,20 +76,23 @@ server <- function(input, output) {
     
   observe({
       #R code
+    
       orderedstamps<-sort(as.numeric(input$stampValues), decreasing = T)
       output$result1 <- renderText(orderedstamps)
       #browser()
       combos <- makeStampCombos(vals = orderedstamps,totalfare = as.numeric(input$totalfare))
       #Print exact combo
-      output$Exact <- renderPrint(c(paste(combos$exact$stampN," x ",combos$exact$stampVal,"cent stamps,"),paste(combos$exact$remaining[nrow(combos$exact)],"cents over" )))
+      #output$Exact <- renderPrint(c(paste(combos$exact$stampN," x ",combos$exact$stampVal,"cent stamps,"),paste(combos$exact$remaining[nrow(combos$exact)],"cents over" )))
       #Print fewest stamp combo
-      output$Fewest <- renderPrint(c(paste(combos$fewest[1,2:nrow(combos$fewest)]$stampN," x ",combos$fewest[1,2:nrow(combos$fewest)]$stampVal,"cent stamps,",combos$fewest[2,2:nrow(combos$fewest)]$stampN," x ",combos$fewest[2,2:nrow(combos$fewest)]$stampVal,"cent stamps,"),paste(-combos$fewest$remaining[nrow(combos$fewest)],"cents over")))
+     # output$Fewest <- renderPrint(c(paste(combos$fewest$stampN," x ",combos$fewest$stampVal,"cent stamps,"),paste(combos$fewest$remaining[nrow(combos$exact)],"cents over" )))
+ 
       #Print Lowest score
-      output$Score <- renderPrint(c(paste(combos$minscore[1:nrow(combos$minscore),]$stampN," x ",combos$minscore[1:nrow(combos$minscore),]$stampVal,"cent stamps,"), paste(-combos$minscore$remaining[nrow(combos$minscore)],"cents over")))
+      #output$Score <- renderPrint(c(paste(combos$minscore[1:nrow(combos$minscore),]$stampN," x ",combos$minscore[1:nrow(combos$minscore),]$stampVal,"cent stamps,"), paste(-combos$minscore$remaining[nrow(combos$minscore)],"cents over"))) #minscore not working
+      
   
         # Generate Stamp Images -------------------------------------------------------------
       
-        stamps<-MakeStampPNG(input$stampValues,borderWidth=0.4,nScallops=11,pal="vaporwave")
+        stamps<-MakeStampPNG(input$stampValues,borderWidth=0.4,nScallops=11,pal="postal")
         #where we gonna save stamp images temporarily?
         img_loc<-paste0(getwd(),"/www/temp/")
         #make that dir if it doesn't exist
@@ -105,6 +110,11 @@ server <- function(input, output) {
   output$main<-renderUI({list(
       AddPostage(combos$exact,label="Exact solution(s):",stamp_styles=stamps$styles),
       AddPostage(combos$fewest,"Fewest stamps:",stamp_styles=stamps$styles),
+      AddPostage(combos$minscore,"Fewest stamps with least overpayment:",stamp_styles=stamps$styles),
+     # browser(),
+      if (orderedstamps[1]> as.numeric(input$totalfare)){
+        AddPostage(combos$onestamp, "One stamp solution:", stamp_styles=stamps$styles)
+      },
       #add spacer at bottom of page
       div(class="spacer")
   )
