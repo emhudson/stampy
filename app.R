@@ -34,6 +34,9 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
             selectizeInput("totalfare","Total Fare",choices=130,
                            multiple=F,
                            options=list(create=T,placeholder="Total fare")),
+            selectizeInput("maxStamps","Maximum number of one kind of stamp?",choices=10,
+                           multiple=F,
+                           options=list(create=T,placeholder="Maximum stamp repeats")),
             actionButton("calculate","Calculate")
         ),
 
@@ -81,6 +84,9 @@ server <- function(input, output) {
       output$result1 <- renderText(orderedstamps)
       #browser()
       combos <- makeStampCombos(vals = orderedstamps,totalfare = as.numeric(input$totalfare))
+      maxNum <- as.numeric(input$maxStamps)
+      combos$exact <- subset(combos$exact, combos$exact$startVal %in% subset(combos$summary,combos$summary$stampN <= maxNum)$startVal) #no exact solutions with over 10 stamps of one kind
+      combos$minscore <- subset(combos$minscore, combos$minscore$startVal %in% subset(combos$summary,combos$summary$stampN <= maxNum)$startVal)
       #Print exact combo
       #output$Exact <- renderPrint(c(paste(combos$exact$stampN," x ",combos$exact$stampVal,"cent stamps,"),paste(combos$exact$remaining[nrow(combos$exact)],"cents over" )))
       #Print fewest stamp combo
