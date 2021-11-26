@@ -5,7 +5,7 @@ account: emhudson
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 5184696
-bundleId: 5282237
+bundleId: 5285450
 url: https://emhudson.shinyapps.io/stampcalculator/
-when: 1637618929.8982
-lastSyncTime: 1637618929.89821
+when: 1637686773.4796
+lastSyncTime: 1637686773.47961

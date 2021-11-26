@@ -63,15 +63,34 @@
 # #Two things stored: remaining fare, remaining slots
 # 
 # 
-totalfare <- 130
-vals <- c(58,37,32,20,13,3)
+#totalfare <- 130
+#vals <- c(58,37,32,20,13,3)
 # vals <- c(58,37,20,13)
 ## Matt approach
 #Loop for starting value
 makeStampCombos <- function(vals, totalfare){
-OUT.0<-lapply(1:length(vals),function(i){
-
+  #browser()
   
+  #Input error states: OUT.0 is just an error message
+  if (identical(totalfare, as.integer(0)) |
+  identical(totalfare, NULL) |
+  identical(totalfare,NA) |
+  is.na(totalfare)|
+  identical(length(totalfare),as.integer(0))) {
+  OUT.0<- "Please enter a total fare (postage rate) value"
+  return(OUT.0)
+  
+} else if (identical(vals, 0) |
+           identical(vals, NULL) |
+           identical(vals,NA) |
+           identical(length(vals),as.integer(0))) {
+  OUT.0 <- "Please enter at least one stamp value"
+  return(OUT.0)
+ 
+  #Stamp calculating code begins
+} else {
+  OUT.0<-lapply(1:length(vals),function(i){
+
   print(paste("loop through",i,"starting stamp is ",vals[i]))
   remaining <- totalfare%%vals[i]
   stampN <- totalfare%/%vals[i]
@@ -84,31 +103,46 @@ OUT.0<-lapply(1:length(vals),function(i){
   #Loop iterating remaining values
 
   for (j in (i+1):length(vals)){ 
-    
-    print(paste("j=",j,"cur next stamp is",vals[j]))
+    print(paste(vals[i],"combo," ,"j=",j,"cur next stamp is",vals[j]))
+    #Last stamp in the input, special case to handle NA stamp; redundant with if below?
     if (is.na(vals[j])){
-      print("uh oh, cur stamp is NA -- must be at the end")
-      #print(paste("and cur StampN is",stampN))
-      #browser()
-      remaining <- remaining - vals[j-1]
+      print("cur stamp is NA -- must be at the end")
+      print(paste("and fare remaining is",remaining))
+
+      # browser()
+      # remaining <- remaining - vals[j-1]
+      # stampN <- stampN +1
       if (remaining > 0){
         stampN <- stampN +1
-        print(paste("Did we fix it? new remaining =",remaining, "new stampN = ",stampN))
-        new_row<-data.frame(startVal=vals[i],
-                            stampVal=vals[j-1],
-                            stampN=stampN,
-                            remaining=remaining)
+        remaining <- remaining - vals[j-1]
+        print(paste("new remaining =",remaining, "new stampN = ",stampN))
+
+
       }
-      else
+      else {
       print("no remainder, we're done")
+
+      }
+
+      new_row<-data.frame(startVal=vals[i],
+                          stampVal=vals[j-1],
+                          stampN=stampN,
+                          remaining=remaining)
+      print("finished last stamp val")
+      print("new row:")
+      print(new_row)
+      #out<-rbind(out,new_row)
+      out <- new_row
+      print(out)
       break()
     }
+    
     if (j>=length(vals)) { #special case for last row: check if any remainder left
       stampN<-remaining%/%vals[j-1]
       remaining <-remaining%%vals[j-1]
-      print(paste("last row, stampN =",stampN,"rem =",remaining))
+      print(paste("last row of this startval, stampN =",stampN,"rem =",remaining))
       while (remaining>0){
-        print("remaining greater than zero in the last row")
+        print("remaining greater than zero for last row")
         if (is.na(vals[j])){
           remaining <- remaining - vals[j-1]
           stampN <- stampN +1
@@ -152,21 +186,31 @@ OUT.0<-lapply(1:length(vals),function(i){
                       
     }
     
-      out<-rbind(out,new_row)
-     
-    }#j loop end
+    #browser()  
+    out<-rbind(out,new_row)
+    #browser()
+    }#end of current startVal, 
  
-  out
+  out #?? This is the current stamp start val combo. For 3 stamp problem, this has wrong stampN (3 rather than 4)
+  #browser()
+  
   #bind all previous
-}#function end
+}#lapply end
 )
+#browser()
+#out #doesn't exist here
+OUT.0
 names(OUT.0)<-vals
 
-#end lapply
+#browser()
 require(dplyr)
-OUT <- OUT.0 %>% bind_rows()
+OUT <- OUT.0 %>% bind_rows() #add this round of stamps to the total outup
+}
 
+
+#browser()
 #bigstampN= stampN[stampN$startVal==stampN$stampVal]$stampVal
+
 bigstampN <- OUT %>% group_by(startVal) %>% filter(row_number()==1) %>% mutate(comboname = paste0(stampN,"x",startVal)) %>% dplyr::select(c(startVal,comboname))
 
 
@@ -213,8 +257,10 @@ if (vals[1]>totalfare){
 }
 
 #list(Exact = exactcombo, Fewest = mininum_combo, Score = miniscore_combo, summaryStamps)
-list(data=OUT.0,summary=summaryStamps,exact=exact,fewest=minimize_num,minscore=minimize_score,onestamp=onestamp)
+finalout <- list(data=OUT.0,summary=summaryStamps,exact=exact,fewest=minimize_num,minscore=minimize_score,onestamp=onestamp)
+
 #browser()
-}
+} #function end
+
 
 

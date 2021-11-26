@@ -82,9 +82,14 @@ server <- function(input, output) {
     
       orderedstamps<-sort(as.numeric(input$stampValues), decreasing = T)
       output$result1 <- renderText(orderedstamps)
-      #browser()
+      
       combos <- makeStampCombos(vals = orderedstamps,totalfare = as.numeric(input$totalfare))
+      #browser()
+      if (length(combos)==1){
+        output$main <- renderUI(h4(combos,class="error"))
+      } else {
       maxNum <- as.numeric(input$maxStamps)
+   
       combos$exact <- subset(combos$exact, combos$exact$startVal %in% subset(combos$summary,combos$summary$stampN <= maxNum)$startVal) #no exact solutions with over 10 stamps of one kind
       combos$minscore <- subset(combos$minscore, combos$minscore$startVal %in% subset(combos$summary,combos$summary$stampN <= maxNum)$startVal)
       #Print exact combo
@@ -113,8 +118,9 @@ server <- function(input, output) {
           })  
           
       # Plot Stamps -------------------------------------------------------------
-  output$main<-renderUI({list(
-      AddPostage(combos$exact,label="Exact solution(s):",stamp_styles=stamps$styles),
+         
+           
+         output$main<-renderUI({list(AddPostage(combos$exact,label="Exact solution(s):",stamp_styles   =stamps$styles),
       AddPostage(combos$fewest,"Fewest stamps:",stamp_styles=stamps$styles),
       AddPostage(combos$minscore,"Fewest stamps with least overpayment:",stamp_styles=stamps$styles),
      # browser(),
@@ -123,9 +129,10 @@ server <- function(input, output) {
       },
       #add spacer at bottom of page
       div(class="spacer")
+     
   )
     })#end renderUI
-
+}
 }) %>% bindEvent(input$calculate)#End observe 
 }# End server logic
     

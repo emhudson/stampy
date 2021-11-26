@@ -40,3 +40,6 @@
 .spacer{
   margin-top: 16rem;
 }
+.error{
+  color: red;
+}
